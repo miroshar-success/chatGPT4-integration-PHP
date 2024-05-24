@@ -6,7 +6,7 @@ $message = $input['message'];
 
 $jsonContent = file_get_contents($config);
 $configData = json_decode($jsonContent, true);
-$openAI = 'sk-proj-p1LpopO4DTRClIekXA6PT3BlbkFJBuZFl8MSXkjTGwyejGPh';//$configData['OPEN_AI_KEY']; 
+$openAI = $configData['OPEN_AI_KEY']; 
 
 $url = 'https://api.openai.com/v1/chat/completions';
 
@@ -38,12 +38,10 @@ if (curl_errno($ch)) {
     exit;
 }
 
-var_dump(json_decode($response, true));
-exit;
 $html = json_decode($response, true)['choices'][0]['message']['content'];
 
-$html = str_replace('```html', '', $html);
-$html = str_replace('```', '', $html);
+$html = str_replace('```html', '<code>', $html);
+$html = str_replace('```', '</code>', $html);
 
 echo json_encode(['response' => $html]);
 curl_close($ch);
