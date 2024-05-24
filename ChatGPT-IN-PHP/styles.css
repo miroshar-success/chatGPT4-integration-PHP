@@ -47,3 +47,7 @@ body {
 .send-button:hover {
     background-color: #0056b3;
 }
+
+.font-grey {
+    color: green !important;
+}
