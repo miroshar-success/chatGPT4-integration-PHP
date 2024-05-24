@@ -21,10 +21,8 @@ function sendMessage() {
         console.log(data);
         const botMessage = document.createElement('div');
         // botMessage.textContent = `Bot: ${data.response}`;
-        botMessage.innerHTML = `Bot: ${data.response}`;
+        botMessage.innerHTML = `<span class="font-grey">Bot:</span><br /> ${data.response}<br />`;
         chatWindow.appendChild(botMessage);
-        botMessage.style.color = 'red';
-        botMessage.style.fontWeight = 'bold';
         chatWindow.scrollTop = chatWindow.scrollHeight;
     })
     .catch(error => console.error('Error:', error));
