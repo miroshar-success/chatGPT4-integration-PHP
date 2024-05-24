@@ -4,6 +4,8 @@ function sendMessage() {
 
     const chatWindow = document.getElementById('chat-window');
     const userMessage = document.createElement('div');
+    userMessage.style.color = 'blue';
+    userMessage.style.fontWeight = 'bold';
     userMessage.textContent = `You: ${userInput}`;
     chatWindow.appendChild(userMessage);
 
@@ -21,6 +23,8 @@ function sendMessage() {
         // botMessage.textContent = `Bot: ${data.response}`;
         botMessage.innerHTML = `Bot: ${data.response}`;
         chatWindow.appendChild(botMessage);
+        botMessage.style.color = 'red';
+        botMessage.style.fontWeight = 'bold';
         chatWindow.scrollTop = chatWindow.scrollHeight;
     })
     .catch(error => console.error('Error:', error));
