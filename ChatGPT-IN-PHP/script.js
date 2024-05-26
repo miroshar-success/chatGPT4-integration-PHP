@@ -9,7 +9,7 @@ function sendMessage() {
     userMessage.textContent = `You: ${userInput}`;
     chatWindow.appendChild(userMessage);
 
-    fetch('fetch_response.php', {
+    fetch('test.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -20,7 +20,6 @@ function sendMessage() {
     .then(data => {
         console.log(data);
         const botMessage = document.createElement('div');
-        // botMessage.textContent = `Bot: ${data.response}`;
         botMessage.innerHTML = `<span class="font-grey">Bot:</span><br /> ${data.response}<br />`;
         chatWindow.appendChild(botMessage);
         chatWindow.scrollTop = chatWindow.scrollHeight;
