@@ -14,121 +14,114 @@ $create_thread_url = $api_url . '/threads';
 $thread_res = CreateThread($api_key, $create_thread_url);
 if ($thread_res) {
     $thread_id = $thread_res;
-    // $message = 'Google API';
     //Step 2: Add a Message to thread using endpoint v1/threads/$thread_id/messages
     $add_message_to_thread_url = $api_url . "/threads/$thread_id/messages";
     $add_msg_res = addMessageToThread($api_key, $message, $add_message_to_thread_url);
     if ($add_msg_res) {
         // Step 3: Run the Assistant on the Thread
-        $data_ass=["assistant_id"=>"$assistant_id"];
+        $data_ass = ["assistant_id"=>"$assistant_id"];
         $run_url = $api_url . '/threads/' . $thread_id . '/runs';
         $run_id = runMessageThread($api_key, $data_ass, $run_url);
         if ($run_id) {
-            //Step 4:run steps 
+            // Step 4:run steps 
             $run_steps_url = "$api_url/threads/$thread_id/runs/$run_id/steps";
             getRunSteps($api_key,$run_steps_url);           
-            //Step 5: status of run
+            // Step 5: status of run
             $runs_sts_url = "$api_url/threads/$thread_id/runs/$run_id";
-            $sts_chk = getRunStatus($api_key,$runs_sts_url);
-            //get messages using endpoint v1/threads/{{thread_id}}/messages
-            $ass_res_rul = "$api_url/threads/$thread_id/messages";
-            sleep(10);
-            $res = getAssResponseMessages($api_key,$ass_res_rul);
-            if ($res) {
-                // Output the Assistant's response
-                //echo $res;
-                $data_d = json_decode($res, true);
-                // echo 'Assistant Response: '.$data_d['data'][0]['content'][0]['text']['value'];
-                $html = $data_d['data'][0]['content'][0]['text']['value'];
-                $html = str_replace("```html", '', $html);
-                $html = str_replace("```", '', $html);
-                echo json_encode(['response' => $html]);
+            
+            $status = "";
+            while(true) {
+                $sts_chk = getRunStatus($api_key, $runs_sts_url);
+                $sts_chk = json_decode($sts_chk, true);
+                if ($sts_chk['status'] == 'in_progress') {
+                    sleep(1);
+                    continue;
+                }
+                $status = $sts_chk['status'];
+                break;
             }
-            else
-            {
-                return false;
+            if ($status == "completed") {
+                // get messages using endpoint v1/threads/{{thread_id}}/messages
+                $ass_res_rul = "$api_url/threads/$thread_id/messages";
+                $res = getAssResponseMessages($api_key, $ass_res_rul);
+                if ($res) {
+                    // Output the Assistant's response
+                    $data_d = json_decode($res, true);
+                    // echo 'Assistant Response: '.$data_d['data'][0]['content'][0]['text']['value'];
+                    $html = $data_d['data'][0]['content'][0]['text']['value'];
+                    echo json_encode(['response' => $html, 'status' => $sts_chk]);
+                }
+                else {
+                    echo json_encode(['response' => 'Request failed.']);
+                }
+            }
+            else {
+                echo json_encode(['response' => 'Request failed.']);
             }
         }
-    }
-    
+    }    
 }
 
 function CreateThread($api_key, $url) {
     $response = curlAPIPost($api_key, $url);
-    if($response)
-    {
+    if ($response) {
         $thread_data = json_decode($response, true);
-        if(isset($thread_data['id']))
-        {
+        if (isset($thread_data['id'])) {
             $thread_id = $thread_data['id'];
-            //echo "THREAD ID:$thread_id<r>";
             return $thread_id;
         }
-        else
-        {
+        else {
             return false;
         }
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
-function addMessageToThread($api_key, $message, $create_thread_url)
-{
-    $add_thread_data = ["role" => "user", "content" => $message . "\nYou are a helpful assistant designed to output HTML."];
+function addMessageToThread($api_key, $message, $create_thread_url) {
+    $add_thread_data = ["role" => "user", "content" => $message];
     $response = curlAPIPost($api_key, $create_thread_url, $add_thread_data);
-    if($response)
-    {
+    if ($response) {
         $msg_data = json_decode($response, true);
-        if(isset($msg_data['id']))
-        {
+        if (isset($msg_data['id'])) {
             return $msg_data['id'];
         }
-        else
-        {
+        else {
             return false;
         }
     }
-    else
-    {
+    else {
         return false;
-    }
-    
+    }    
 }
 
 //run message thread
 function runMessageThread($api_key,$message,$run_thread_url)
 {
     $response = curlAPIPost($api_key,$run_thread_url,$message);
-    if($response)
-    {
+    if ($response) {
         //echo "runMessageThread:$response";
         $run_data = json_decode($response, true);
-        if(isset($run_data['id']))
-        {
+        if (isset($run_data['id'])) {
             return $run_data['id'];
         }
-        else
-        {
+        else {
             return false;
         }
     }
-    else
-    {
+    else {
         return false;
     }
 }
 
-function getRunSteps($api_key,$url) {
+function getRunSteps($api_key, $url) {
     $response = getCurlCall($api_key, $url);
     return $response;
 }
 
-function getRunStatus($api_key,$url) {
-    $response = getCurlCall($api_key,$url);
-    //echo "getRunStatus:$response<br>";
+function getRunStatus($api_key, $url) {
+    $response = getCurlCall($api_key, $url);
     return $response;
 }
 
@@ -136,7 +129,6 @@ function getAssResponseMessages($api_key, $url) {
     $response = getCurlCall($api_key, $url);
     return $response;
 }
-
 
 function curlAPIPost($api_key, $url, $data='') {
     $headers = [
@@ -164,7 +156,7 @@ function curlAPIPost($api_key, $url, $data='') {
     }
 }
 
-function getCurlCall($api_key,$url) {
+function getCurlCall($api_key, $url) {
     $curl = curl_init();
     curl_setopt_array($curl, array(
         CURLOPT_URL => $url,
