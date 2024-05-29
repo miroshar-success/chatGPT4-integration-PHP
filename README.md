@@ -1,4 +1,5 @@
-Please change valid OpenAI key in config.json
+Please change valid OpenAI key, Assistant ID and mode in config.json
+If mode is custom, it means custom GPT
 
 ## Please refer follow link
 https://platform.openai.com/docs/assistants/overview
